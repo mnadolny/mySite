@@ -1,0 +1,17 @@
+{
+  "name": "mysite",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile-scss": "sass --watch src/scss:css"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "p5": "^1.6.0",
+    "sass": "^1.62.0"
+  }
+}
