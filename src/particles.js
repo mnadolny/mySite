@@ -8,7 +8,9 @@ let engine;
 let world;
 let particles = [];
 let customFont;
-const name = "MATT NADOLNY";
+const name = "Matt Nadolny";
+let fallingCircles = [];
+
 
 function preload() {
   customFont = loadFont('src/helvetica.ttf');
@@ -17,8 +19,9 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
-  let fontSize = 192;
+  let fontSize = 128;
   let xOffset = 0;
+  let letterSpacing = 10; // Add this line before the for loop
 
   if (windowWidth <= 768) {
     fontSize = 64;
@@ -32,12 +35,19 @@ function setup() {
 
   textSize(fontSize);
 
-  let startX = (width - textWidth(name)) / 2;
+  // Calculate the total width of the name
+  let nameWidth = 0;
+  for (let i = 0; i < name.length; i++) {
+    let char = name.charAt(i);
+    nameWidth += textWidth(char) + letterSpacing + (windowWidth < 600 ? 0 : -15);
+  }
+
+  let startX = (width - nameWidth) / 2;
   let startY = (height - fontSize) / 2;
 
   for (let i = 0; i < name.length; i++) {
     let char = name.charAt(i);
-    let sampleFactor = 0.03; // Set number of particles on desktop
+    let sampleFactor = 0.099; // Set number of particles on desktop
     if (windowWidth < 600) {
       sampleFactor = 0.07; // Set number of particles on mobile
     }
@@ -48,7 +58,7 @@ function setup() {
       particles.push(particle);
     });
 
-    xOffset += textWidth(char) + (windowWidth < 600 ? 0 : -15);
+    xOffset += textWidth(char) + letterSpacing + (windowWidth < 600 ? 0 : -15);
   }
 }
 
@@ -62,6 +72,15 @@ function draw() {
   let cursorX = mouseX;
   let cursorY = mouseY;
 
+  if (frameCount % 5 == 0) { // Change the interval to create circles more frequently for a rain-like effect
+    createFallingCircle();
+  }
+
+    // Show falling circles
+    fallingCircles.forEach(circle => {
+      circle.bounceOffCursor(cursorX, cursorY, 200); // Add this line before circle.show()
+      circle.show();
+    });
   particles.forEach((particle, index) => {
     if (index < particles.length - 1) {
       let nextParticle = particles[index + 1];
@@ -79,7 +98,48 @@ function draw() {
     particle.interact(cursorX, cursorY);
     particle.show();
   });
+  noFill();
+  stroke(255);
+  strokeWeight(1);
+  ellipse(cursorX, cursorY, 200 * 2);
 }
+
+class FallingCircle {
+  constructor(x, y, radius) {
+    this.radius = radius;
+    this.body = Bodies.circle(x, y, this.radius);
+    World.add(world, this.body);
+
+    Body.setVelocity(this.body, { x: 0, y: random(5, 10) }); // Add initial velocity for a rain-like falling effect
+  }
+
+  bounceOffCursor(cursorX, cursorY, radius) {
+    let d = dist(cursorX, cursorY, this.body.position.x, this.body.position.y);
+    if (d <= radius) {
+      let force = createVector(this.body.position.x - cursorX, this.body.position.y - cursorY);
+      force.normalize().mult(0.02);
+      Body.applyForce(this.body, this.body.position, force);
+    }
+  }
+
+  show() {
+    noFill();
+    stroke(255);
+    strokeWeight(1);
+    ellipse(this.body.position.x, this.body.position.y, this.radius * 2);
+  }
+}
+
+
+function createFallingCircle() {
+  let x = random(0, width);
+  let y = 0;
+  let radius = random(2, 20); // Generate a random radius between 2 and 4 for a more rain-like size
+  let fallingCircle = new FallingCircle(x, y, radius);
+  fallingCircles.push(fallingCircle);
+}
+
+
 
 
 class Particle {
@@ -110,7 +170,7 @@ class Particle {
       let force = createVector(x - this.body.position.x, y - this.body.position.y);
       force.normalize().mult(0.15); // Reduce the force applied
       Body.applyForce(this.body, this.body.position, force);
-    } else if (d >= 30 && d <= 100) { // New condition to apply a smaller force when the cursor is between 30 and 300px away
+    } else if (d >= 30 && d <= 200) { // New condition to apply a smaller force when the cursor is between 30 and 300px away
       let force = createVector(x - this.body.position.x, y - this.body.position.y);
       force.normalize().mult(0.1); // Apply a smaller force
       Body.applyForce(this.body, this.body.position, force);
