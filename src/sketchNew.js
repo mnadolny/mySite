@@ -16,30 +16,42 @@ function preload() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+
+  let fontSize = 192;
+  let xOffset = 0;
+
+  if (windowWidth <= 768) {
+    fontSize = 64;
+    if (windowWidth < 600) {
+      xOffset = 0;
+    }
+  }
+
   engine = Engine.create();
   world = engine.world;
-
-  const fontSize = 192;
 
   textSize(fontSize);
 
   let startX = (width - textWidth(name)) / 2;
   let startY = (height - fontSize) / 2;
-  let xOffset = 0;
 
   for (let i = 0; i < name.length; i++) {
     let char = name.charAt(i);
-    let charPath = customFont.textToPoints(char, startX + xOffset, startY, fontSize, { sampleFactor: 0.2 });
+    let sampleFactor = 0.03; // Set number of particles on desktop
+    if (windowWidth < 600) {
+      sampleFactor = 0.07; // Set number of particles on mobile
+    }
+    let charPath = customFont.textToPoints(char, startX + xOffset, startY, fontSize, { sampleFactor: sampleFactor });
 
     charPath.forEach(pt => {
       let particle = new Particle(pt.x, pt.y);
       particles.push(particle);
     });
 
-    xOffset += textWidth(char);
-
+    xOffset += textWidth(char) + (windowWidth < 600 ? 0 : -2);
   }
 }
+
 
 
 
@@ -58,7 +70,12 @@ function draw() {
         stroke(255);
         line(particle.body.position.x, particle.body.position.y, nextParticle.body.position.x, nextParticle.body.position.y);
       }
+
+      if (d >= 100 && d <= 200) { // New condition to apply random movement when the cursor is more than 100px away
+        particle.randomMove();
+      }
     }
+    
     particle.interact(cursorX, cursorY);
     particle.show();
   });
@@ -70,7 +87,9 @@ class Particle {
     this.body = Bodies.circle(x, y, 3);
     this.pos = { x: x, y: y };
     World.add(world, this.body);
-    
+
+    this.randomForce = createVector(random(-0.001, 0.001), random(-0.001, 0.009));
+
     this.spring = Constraint.create({
       pointA: { x: x, y: y },
       bodyB: this.body,
@@ -79,6 +98,10 @@ class Particle {
       length: 1
     });
     World.add(world, this.spring);
+  }
+
+  randomMove() {
+    Body.applyForce(this.body, this.body.position, this.randomForce);
   }
 
   interact(x, y) {
