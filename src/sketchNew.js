@@ -8,7 +8,7 @@ let engine;
 let world;
 let particles = [];
 let customFont;
-const name = "Matt Nadolny";
+const name = "MATT NADOLNY";
 
 function preload() {
   customFont = loadFont('src/helvetica.ttf');
@@ -48,7 +48,7 @@ function setup() {
       particles.push(particle);
     });
 
-    xOffset += textWidth(char) + (windowWidth < 600 ? 0 : -2);
+    xOffset += textWidth(char) + (windowWidth < 600 ? 0 : -15);
   }
 }
 
