@@ -17,6 +17,7 @@ function preload() {
 }
 
 function setup() {
+  noCursor(); // Hide the default cursor
   createCanvas(windowWidth, windowHeight);
 
   let fontSize = 128;
@@ -76,11 +77,16 @@ function draw() {
     createFallingCircle();
   }
 
-    // Show falling circles
-    fallingCircles.forEach(circle => {
-      circle.bounceOffCursor(cursorX, cursorY, 200); // Add this line before circle.show()
+  fallingCircles = fallingCircles.filter(circle => {
+    if (circle.body.position.y - circle.radius > height) {
+      World.remove(world, circle.body);
+      return false;
+    } else {
+      circle.bounceOffCursor(cursorX, cursorY, 200);
       circle.show();
-    });
+      return true;
+    }
+  });
   particles.forEach((particle, index) => {
     if (index < particles.length - 1) {
       let nextParticle = particles[index + 1];
