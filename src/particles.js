@@ -48,7 +48,7 @@ function setup() {
 
   for (let i = 0; i < name.length; i++) {
     let char = name.charAt(i);
-    let sampleFactor = 0.099; // Set number of particles on desktop
+    let sampleFactor = 0.075; // Set number of particles on desktop
     if (windowWidth < 600) {
       sampleFactor = 0.07; // Set number of particles on mobile
     }
